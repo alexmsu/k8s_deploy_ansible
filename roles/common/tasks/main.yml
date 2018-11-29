@@ -51,7 +51,7 @@
 - name: Start kubelet
   systemd:
     name: kubelet
-    state: started
+    state: restarted
     enabled: yes
     daemon-reload: yes
 
@@ -84,7 +84,7 @@
 - name: Start dockerd
   systemd:
     name: docker
-    state: started
+    state: restarted
     enabled: yes
     daemon-reload: yes
 
