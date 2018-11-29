@@ -1,0 +1,62 @@
+---
+# file: roles/kube-master/tasks/main.yml
+
+- name: Get Calico ip
+  shell: "route | grep default | awk -F' ' '{ print $2 }'"
+  register: K8SHA_CALICO_REACHABLE_IP
+
+- name: Template kubeadm_config.yaml
+  template:
+    src: kubeadm_config.yaml.tpl
+    dest: /home/kubeadmin/kubeadm_config.yaml
+
+- name: Create canal directory
+  file:
+    path: "{{ CANAL_DIR }}"
+    state: directory
+
+- name: Template canal.yaml
+  template:
+    src: canal.yaml.tpl
+    dest: "{{ CANAL_DIR }}/canal.yaml"
+
+- name: Copy rbac.yaml
+  copy:
+    src: rbac.yaml
+    dest: "{{ CANAL_DIR }}/rbac.yaml"
+
+- name: Init k8s
+  shell: "{{ item }}"
+  with_items:
+    - kubeadm reset -f
+    - kubeadm init --config=/home/kubeadmin/kubeadm_config.yaml | tee /home/kubeadmin/kubeadm_init.log
+    - cat /home/kubeadmin/kubeadm_init.log | grep "kubeadm join" > /home/kubeadmin/kubeadm_join.sh
+    - mkdir -p /home/kubeadmin/.kube
+    - cp -f /etc/kubernetes/admin.conf /home/kubeadmin/.kube/config
+    - chown kubeadmin:kubeadmin /home/kubeadmin/.kube/config
+
+- name: Start canal
+  become: no
+  shell: "kubectl apply -f {{ CANAL_DIR }}  --validate=false"
+
+- name: Fetch kubeadm_join.sh
+  fetch:
+    src: /home/kubeadmin/kubeadm_join.sh
+    dest: /tmp/
+    flat: yes
+
+- name: Create local k8s directory
+  file:
+    path: "{{ LOCAL_DIR }}"
+    state: directory
+
+- name: Fetch key and admin.conf
+  fetch:
+    src: /etc/kubernetes/{{ item }}
+    dest: "{{ LOCAL_DIR }}/"
+    flat: yes
+  with_items:
+    - admin.conf
+    - pki/apiserver-kubelet-client.crt
+    - pki/apiserver-kubelet-client.key
+    - pki/ca.crt

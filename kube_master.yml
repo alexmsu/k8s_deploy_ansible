@@ -1,0 +1,9 @@
+---
+# file: kube_master.yml
+
+- hosts: kube-master
+  remote_user: kubeadmin
+  become: yes
+  roles:
+    - common
+    - kube-master

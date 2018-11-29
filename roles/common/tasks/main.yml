@@ -1,0 +1,112 @@
+---
+# file: roles/common/tasks/main.yml
+
+- name: apt-get update && sudo apt-get upgrade -y
+  apt:
+    update_cache: yes
+    state: latest
+
+- name: Install system dependency
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - nfs-common
+    state: latest
+    update_cache: yes
+
+- name: Disable swap memory
+  shell: swapoff -a
+
+- name: sysctl vm.max_map_count
+  sysctl:
+    name: vm.max_map_count
+    value: 262144
+
+- name: sysctl net.ipv4.ip_forward
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+
+- name: Add k8s apt key
+  shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+- name: Add k8s apt repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+
+- name: Install k8s packages
+  apt:
+    name:
+      - kubelet
+      - kubectl
+      - kubeadm
+    state: latest
+    update_cache: yes
+
+- name: Setup cgroup for kubeadm
+  shell: sed -i "s/kubelet.conf\"/kubelet.conf --cgroup-driver=cgroupfs\"/g" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+- name: Start kubelet
+  systemd:
+    name: kubelet
+    state: started
+    enabled: yes
+    daemon-reload: yes
+
+- name: Add docker apt key
+  shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+- name: Add docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+
+- name: Install docker
+  apt:
+    name: docker-ce={{ DOCKER_VERSION }}~ce-0~ubuntu-xenial
+    update_cache: yes
+
+- name: Configure docker
+  shell: "{{ item }}"
+  with_items:
+    - chown -R ${USER}:$(id -gn ${USER}) /etc/default/docker
+    - chown -R ${USER}:$(id -gn ${USER}) /etc/docker
+    - |
+      if ! grep -q "insecure-registry" /etc/default/docker; then
+        echo "DOCKER_OPTS=\"--insecure-registry {{ K8SHA_DR_SERVER }}\"" >> /etc/default/docker
+        echo "{" > /etc/docker/daemon.json
+        echo "    \"insecure-registries\" : [\"{{ K8SHA_DR_SERVER }}\"]" >> /etc/docker/daemon.json
+        echo "}" >> /etc/docker/daemon.json
+      fi
+    - usermod -aG docker ${USER}
+
+- name: Start dockerd
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+    daemon-reload: yes
+
+- name: Install docker-compose
+  shell: "{{ item }}"
+  with_items:
+    - curl -L https://github.com/docker/compose/releases/download/{{ DOCKER_COMPOSE_VERSION }}/docker-compose-Linux-x86_64 > ./docker-compose
+    - chmod +x ./docker-compose
+    - mv ./docker-compose /usr/local/bin/docker-compose
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes
+
+- name: Cronjob
+  cron:
+    name: docker image prune
+    minute: 2
+    hour: 0
+    day: 1
+    job: docker image prune -a

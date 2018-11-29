@@ -1,0 +1,9 @@
+---
+# file: kube_slave.yml
+
+- hosts: kube-slave
+  remote_user: kubeadmin
+  become: yes
+  roles:
+    - common
+    - kube-slave

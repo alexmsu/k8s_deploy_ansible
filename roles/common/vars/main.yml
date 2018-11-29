@@ -1,0 +1,6 @@
+---
+# file: /roles/common/vars/main.yml
+
+DOCKER_VERSION: 17.03.1
+DOCKER_COMPOSE_VERSION: 1.21.2
+K8SHA_DR_SERVER: 10.106.6.157:5000

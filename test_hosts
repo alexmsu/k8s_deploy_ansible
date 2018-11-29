@@ -1,0 +1,10 @@
+[kube-master]
+10.106.6.78
+
+[kube-slave]
+10.106.6.80
+10.106.6.81
+
+[kube-cluster:children]
+kube-master
+kube-slave
