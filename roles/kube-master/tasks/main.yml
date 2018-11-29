@@ -60,3 +60,9 @@
     - pki/apiserver-kubelet-client.crt
     - pki/apiserver-kubelet-client.key
     - pki/ca.crt
+
+- name: Change key and admin.conf mode
+  shell: "{{ item }}"
+  with_items:
+    - chmod -R 755 /etc/kubernetes/pki
+    - chmod 755 /etc/kubernetes/admin.conf
