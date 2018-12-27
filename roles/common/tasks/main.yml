@@ -19,6 +19,9 @@
 - name: Disable swap memory
   shell: swapoff -a
 
+- name: Turn off memory
+  shell: sed -e '/swap/ s/^#*/#/' -i /etc/fstab
+
 - name: sysctl vm.max_map_count
   sysctl:
     name: vm.max_map_count
