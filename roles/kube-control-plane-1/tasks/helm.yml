@@ -1,0 +1,12 @@
+- name: Check if Helm is installed
+  shell: command -v helm >/dev/null 2>&1
+  register: is_helm_exist
+  ignore_errors: yes
+
+- name: Install Helm
+  #snap:
+  #  name: helm
+  #  classic: yes
+  shell: snap install helm --classic
+  when: is_helm_exist.failed == True
+  tags: deploy

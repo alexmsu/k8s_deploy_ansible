@@ -1,0 +1,10 @@
+- name: Check running status
+  stat:
+    path: '{{ HOME }}/running'
+  register: running_stat
+  tags: run
+
+- name: Run kube-control-plane-other
+  include: run.yml
+  when: running_stat.stat.exists == False
+  tags: run

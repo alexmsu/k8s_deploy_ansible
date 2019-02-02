@@ -1,0 +1,8 @@
+- name: Excute kube-worker Roles
+  hosts: kube-worker
+  remote_user: '{{ REMOTE_USER }}'
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+    - kube-worker

@@ -1,0 +1,18 @@
+- name: Deploy Kubernetes cluster
+  include: deploy.yml
+  tags: deploy
+
+- name: Check running status
+  stat:
+    path: '{{ HOME }}/running'
+  register: running_stat
+  tags: run
+
+- name: Run kube-control-plane-1
+  include: run.yml
+  when: running_stat.stat.exists == False
+  tags: run
+
+- name: Fetch keys
+  include: fetch.yml
+  tags: ['run', 'fetch']

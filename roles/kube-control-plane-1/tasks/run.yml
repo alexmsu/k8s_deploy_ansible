@@ -1,0 +1,20 @@
+- name: Init k8s
+  shell: '{{ item }}'
+  with_items:
+    - kubeadm init --config={{ HOME }}/kubeadm_config.yaml
+    - cp -f /etc/kubernetes/admin.conf {{ HOME }}/.kube/config
+
+- name: Change kubernetes config owner
+  file:
+    path: '{{ HOME }}/.kube/config'
+    owner: '{{ REMOTE_USER }}'
+    group: '{{ REMOTE_USER }}'
+
+- name: Deploy canal
+  become: no
+  shell: 'kubectl apply -f {{ HOME }}/canal  --validate=false'
+
+- name: Create running flag
+  file:
+    path: '{{ HOME }}/running'
+    state: touch

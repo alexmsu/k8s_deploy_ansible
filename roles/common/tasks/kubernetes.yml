@@ -1,0 +1,29 @@
+- name: Add k8s apt key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  tags: deploy
+
+- name: Add k8s apt repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+  tags: deploy
+
+- name: Install k8s packages
+  apt:
+    name:
+      - kubelet
+      - kubectl
+      - kubeadm
+    state: latest
+    update_cache: yes
+  tags: deploy
+
+- name: Setup cgroup for kubeadm
+  replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: 'kubelet.conf"$'
+    replace: 'kubelet.conf --cgroup-driver=cgroupfs"'
+  notify:
+    - Start kubelet
+  tags: deploy

@@ -1,0 +1,7 @@
+- name: Reset kubeadm
+  shell: kubeadm reset -f
+
+- name: Remove running flag
+  file:
+    path: '{{ HOME }}/running'
+    state: absent

@@ -1,3 +1,5 @@
-# k8s_deploy_ansible
+### k8s deploy ansible
 
-ansible-playbook -i test_hosts --ask-sudo-pass kube_cluster.yml
+    ```
+    ansible-playbook -i inventory --ask-sudo-pass kube_cluster.yml -t [deploy | run | join | stop | fetch]
+    ```

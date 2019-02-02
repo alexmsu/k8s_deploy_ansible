@@ -1,4 +1,4 @@
 ---
 # file: kube_cluster.yml
-- import_playbook: kube_master.yml
-- import_playbook: kube_slave.yml
+- import_playbook: kube_control_plane.yml
+- import_playbook: kube_worker.yml

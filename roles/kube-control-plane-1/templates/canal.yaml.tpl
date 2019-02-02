@@ -56,7 +56,7 @@ data:
   # Flannel network configuration. Mounted into the flannel container.
   net-conf.json: |
     {
-      "Network": "{{K8SHA_POD_CIDR}}",
+      "Network": "{{ K8SHA_POD_CIDR }}",
       "Backend": {
         "Type": "vxlan"
       }
@@ -138,7 +138,7 @@ spec:
             - name: IP
               value: "autodetect"
             - name: IP_AUTODETECTION_METHOD
-              value: "can-reach={{K8SHA_CALICO_REACHABLE_IP.stdout}}"
+              value: "can-reach={{ ansible_default_ipv4.gateway }}"
             - name: NODENAME
               valueFrom:
                 fieldRef:

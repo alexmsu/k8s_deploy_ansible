@@ -1,0 +1,6 @@
+- name: Install Snap
+  apt:
+    name: snapd
+    state: latest
+    update_cache: yes
+  tags: deploy

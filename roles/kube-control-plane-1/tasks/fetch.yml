@@ -1,0 +1,49 @@
+- name: Generate token
+  shell: kubeadm token create --print-join-command > {{ HOME }}/kubeadm_join.sh
+
+- name: Fetch kubeadm_join.sh
+  fetch:
+    src: '{{ HOME }}/kubeadm_join.sh'
+    dest: '{{ LOCAL_DIR }}/'
+    flat: yes
+
+- name: Fetch key and admin.conf
+  fetch:
+    src: '/etc/kubernetes/pki/{{ item }}'
+    dest: '{{ LOCAL_DIR }}/pki/'
+    flat: yes
+  with_items:
+    - apiserver-kubelet-client.crt
+    - apiserver-kubelet-client.key
+    - ca.crt
+    - ca.key
+    - sa.key
+    - sa.pub
+    - front-proxy-ca.crt
+    - front-proxy-ca.key
+
+- name: Fetch etcd keys
+  fetch:
+    src: '/etc/kubernetes/pki/etcd/{{ item }}'
+    dest: '{{ LOCAL_DIR }}/pki/etcd/'
+    flat: yes
+  with_items:
+    - ca.crt
+    - ca.key
+
+- name: Fetch admin.conf
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: '{{ LOCAL_DIR }}/'
+    flat: yes
+
+- name: Change key access mode
+  file:
+    path: /etc/kubernetes/pki
+    recurse: yes
+    mode: 0755
+
+- name: Change admin.conf access mode
+  file:
+    path: /etc/kubernetes/admin.conf
+    mode: 0755

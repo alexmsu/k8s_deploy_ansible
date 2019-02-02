@@ -1,0 +1,30 @@
+[kube-control-plane-1]
+# Add the first control plane node
+10.106.6.151
+
+[kube-control-plane-1:vars]
+# Please configure the following lines
+LOADBALANCER_IP=10.106.6.89
+LOADBALANCER_PORT=6443
+
+[kube-control-plane-others]
+# Add all other control plane nodes
+
+[kube-worker]
+# Add all worker nodes
+10.106.6.152
+
+[kube-cluster:children]
+kube-control-plane-1
+kube-control-plane-others
+kube-worker
+
+[kube-cluster:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+# Please configure the following lines
+CLUSTER_NAME=kube-3
+REMOTE_USER=kubeadmin
+
+HOME='/home/{{ REMOTE_USER }}'
+LOCAL_DIR='~/.kube/{{ CLUSTER_NAME }}'

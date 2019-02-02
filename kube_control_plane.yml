@@ -1,0 +1,17 @@
+- name: Excute kube-control-plane-1 Roles
+  hosts: kube-control-plane-1
+  remote_user: '{{ REMOTE_USER }}'
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+    - kube-control-plane-1
+
+- name: Excute kube-control-plane-others Roles
+  hosts: kube-control-plane-others
+  remote_user: '{{ REMOTE_USER }}'
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+    - kube-control-plane-others

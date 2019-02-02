@@ -1,0 +1,47 @@
+- name: Add docker apt key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  tags: deploy
+
+- name: Add docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+  tags: deploy
+
+- name: Install docker
+  apt:
+    name: docker-ce={{ DOCKER_VERSION }}~ce-0~ubuntu-xenial
+    update_cache: yes
+  tags: deploy
+
+- name: Configure docker registry insecure access
+  template:
+    src: docker_daemon.json.tpl
+    dest: /etc/docker/daemon.json
+  notify:
+    - Start dockerd
+  tags: deploy
+
+- name: Check for existing Docker Compose file
+  stat:
+    path: "/usr/bin/docker-compose"
+  register: docker_register_docker_compose
+
+- name: Install docker-compose
+  shell: "{{ item }}"
+  with_items:
+    - curl -L https://github.com/docker/compose/releases/download/{{ DOCKER_COMPOSE_VERSION }}/docker-compose-Linux-x86_64 > ./docker-compose
+    - chmod +x ./docker-compose
+    - mv ./docker-compose /usr/bin/docker-compose
+  when: docker_register_docker_compose.stat.exists == False
+  tags: deploy
+
+- name: Docker image prune cronjob
+  cron:
+    name: docker image prune
+    minute: 2
+    hour: 0
+    day: 1
+    job: docker image prune -f
+  tags: deploy

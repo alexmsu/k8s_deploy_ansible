@@ -1,0 +1,42 @@
+- name: Copy keys to node
+  copy:
+    src: '{{ LOCAL_DIR }}/pki/{{ item }}'
+    dest: /etc/kubernetes/pki/
+  with_items:
+    - ca.crt
+    - ca.key
+    - sa.key
+    - sa.pub
+    - front-proxy-ca.crt
+    - front-proxy-ca.key 
+
+- name: Copy etcd to node
+  copy:
+    src: '{{ LOCAL_DIR }}/pki/etcd/{{ item }}'
+    dest: /etc/kubernetes/pki/etcd/
+  with_items:
+    - ca.crt
+    - ca.key
+
+- name: Copy admin.conf to node
+  copy:
+    src: '{{ LOCAL_DIR }}/admin.conf'
+    dest: /etc/kubernetes/
+
+- name: Copy join command to node
+  copy:
+    src: '{{ LOCAL_DIR }}/kubeadm_join.sh'
+    dest: '{{ HOME }}/'
+    mode: 0755
+
+- name: Add additional options
+  shell: 'echo $(cat kubeadm_join.sh) --experimental-control-plane > {{ HOME }}/kubeadm_join.sh'
+  tags: run
+
+- name: Join cluster
+  shell: 'bash {{ HOME }}/kubeadm_join.sh'
+
+- name: Create running flag
+  file:
+    path: '{{ HOME }}/running'
+    state: touch

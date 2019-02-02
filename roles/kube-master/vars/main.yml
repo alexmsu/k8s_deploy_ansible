@@ -1,8 +1,0 @@
----
-# file: /roles/kube-master/vars/main.yml
-
-K8SHA_TOKEN: "6r709g.kzuup4oswniwgr4h"
-K8SHA_POD_CIDR: "192.168.0.0/16"
-K8SHA_SVC_CIDR: "192.169.0.0/16"
-CANAL_DIR: "/home/kubeadmin/canal"
-LOCAL_DIR: "~/.kube/keys/{{ansible_hostname}}"

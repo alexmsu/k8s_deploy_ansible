@@ -1,0 +1,30 @@
+- name: Template kubeadm_config.yaml
+  template:
+    src: kubeadm_config.yaml.tpl
+    dest: '{{ HOME }}/kubeadm_config.yaml'
+
+- name: Create canal directory
+  file:
+    path: '{{ HOME }}/canal'
+    state: directory
+
+- name: Template canal.yaml
+  template:
+    src: canal.yaml.tpl
+    dest: '{{ HOME }}/canal/canal.yaml'
+
+- name: Copy rbac.yaml
+  copy:
+    src: rbac.yaml
+    dest: '{{ HOME }}/canal/rbac.yaml'
+
+- name: Create k8s directory
+  file:
+    path: '{{ HOME }}/.kube'
+    state: directory
+
+- name: Include Snap tasks
+  include: snap.yml
+
+- name: Include Helm tasks
+  include: helm.yml

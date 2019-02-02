@@ -1,0 +1,43 @@
+- name: Apt update
+  apt:
+    update_cache: yes
+    state: latest
+
+- name: Install system dependency
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: latest
+    update_cache: yes
+
+- name: Disable swap memory
+  shell: swapoff -a
+
+- name: Turn off memory
+  shell: sed -e '/swap/ s/^#*/#/' -i /etc/fstab
+
+- name: sysctl vm.max_map_count
+  sysctl:
+    name: vm.max_map_count
+    value: 262144
+
+- name: sysctl net.ipv4.ip_forward
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+
+- name: Install Docker tools
+  include: docker.yml
+
+- name: Install Kubernetes tools
+  include: kubernetes.yml
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes
